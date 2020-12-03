@@ -9,8 +9,6 @@ import {CellStateModel} from 'src/app/models/cell-state.model';
 export class GameCellComponent {
   @Input() state = CellStateModel.EMPTY;
 
-  constructor() {
-
-  }
+  constructor() {}
 
 }

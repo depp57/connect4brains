@@ -1,42 +1,40 @@
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 import {GameService} from '../../services/game.service';
 import {CellStateModel} from '../../models/cell-state.model';
 import {Player} from '../../models/player.model';
+import {MessageService} from 'primeng/api';
 
 @Component({
   selector: 'app-board',
   templateUrl: './board.component.html',
   styleUrls: ['./board.component.scss']
 })
-export class BoardComponent implements OnInit {
+export class BoardComponent {
   board: CellStateModel[][];
-  highlightedCell = -1;
 
-  constructor(private gameService: GameService) {
-    this.board = this.gameService.board;
-  }
-
-  ngOnInit(): void {
-
+  constructor(private gameService: GameService, private messageService: MessageService) {
+    this.board = this.gameService.getBoard(); // TODO maybe error car on recreer la game dont ref perdue
   }
 
   onMouseEnter(column: number): void {
-    if (this.highlightedCell === -1) {
-      this.highlightedCell = this.gameService.dropToken(Player.REAL_PLAYER, column, true);
-      this.gameService.highlight(column, this.highlightedCell, true);
-    }
+    this.gameService.highlight(column, true);
   }
 
   onMouseLeave(column: number): void {
-    if (this.highlightedCell !== -1) {
-      this.gameService.highlight(column, this.highlightedCell, false);
-      this.highlightedCell = -1;
-    }
+    this.gameService.highlight(column, false);
   }
 
   onMouseClick(column: number): void {
-    if (this.gameService.dropToken(Player.REAL_PLAYER, column, false) !== -1) {
-      // TODO pass turn
+    if (this.gameService.isPlayerTurn(Player.REAL_PLAYER) &&
+        this.gameService.dropToken(Player.REAL_PLAYER, column)) {
+    }
+    else {
+      this.messageService.add({
+        key: 'bc',
+        severity: 'info',
+        summary: 'It\'s not your turn',
+        detail: 'Wait for the opponent player',
+        life: 1500});
     }
   }
 }

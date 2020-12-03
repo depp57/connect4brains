@@ -1,5 +1,6 @@
 export class PlayerModel {
-  constructor(public readonly name: string, public score: number) {}
+  public score = 0;
+  constructor(public readonly name: string) {}
 }
 
 export enum Player {

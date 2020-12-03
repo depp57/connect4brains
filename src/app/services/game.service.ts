@@ -1,143 +1,105 @@
-import {Injectable} from '@angular/core';
+import {Injectable, OnDestroy} from '@angular/core';
 import {Player, PlayerModel} from '../models/player.model';
-import {CellStateModel} from '../models/cell-state.model';
-import {Subject} from 'rxjs';
+import {BehaviorSubject, Subject, Subscription} from 'rxjs';
 import {ScoreService} from './score.service';
+import {AiRandom} from '../models/ai-random';
+import {Ai} from '../models/ai';
+import {Game} from '../models/game';
+import {CellStateModel} from '../models/cell-state.model';
 
 
 @Injectable({providedIn: 'root'})
-export class GameService {
-  players!: PlayerModel[];
-  board: CellStateModel[][] = [];
+export class GameService implements OnDestroy {
+  players!: [PlayerModel, Ai];
   winnerSubject = new Subject<Player>();
 
-  private readonly ROWS = 6;
-  private readonly COLUMNS = 7;
+  private game!: Game;
+  private currentPlayerTurn: BehaviorSubject<Player>;
+  private currentPlayerTurnSubscription!: Subscription;
+  private highlightedCellRow = -1;
 
-  constructor(private scoreService: ScoreService) {}
+  private static getRandomPlayer(): Player {
+    return (Math.random() > 0.5) ? Player.REAL_PLAYER : Player.AI;
+  }
+
+  constructor(private scoreService: ScoreService) {
+    this.currentPlayerTurn = new BehaviorSubject<Player>(GameService.getRandomPlayer());
+  }
 
   startGame(playerName: string): void {
     this.players = [
-      new PlayerModel(playerName, 0),
-      new PlayerModel('AI', 0)
+      new PlayerModel(playerName),
+      new AiRandom()
     ];
 
+    this.game = new Game();
     this.scoreService.initPlayers(this.players);
-    this.initBoard();
+    this.initAi();
   }
 
-  private initBoard(): void {
-    for (let column = 0; column < this.COLUMNS; column++) {
-      this.board[column] = [];
-      for (let row = 0; row < this.ROWS; row++) {
-        this.board[column][row] = CellStateModel.EMPTY;
-      }
-    }
-  }
+  dropToken(player: Player, column: number): boolean {
+    const row = this.game.dropToken(player, column);
 
-  public isValidMove(column: number): boolean {
-    return this.board[column][0] === CellStateModel.EMPTY;
-  }
-
-  public dropToken(player: Player, column: number, justToCheck: boolean = false): number {
-    if (!this.isValidMove(column)) {
-      return -1;
-    }
-
-    let tokenDropped = false;
-    let currentRow = this.ROWS;
-    while (!tokenDropped) {
-      currentRow--;
-      if (this.board[column][currentRow] === CellStateModel.EMPTY ||
-        this.board[column][currentRow] === CellStateModel.HIGHLIGHTED_CELL) {
-        tokenDropped = true;
-        if (justToCheck) {
-          continue;
-        }
-        this.board[column][currentRow] = player ===
-          Player.REAL_PLAYER ? CellStateModel.REAL_PLAYER : CellStateModel.AI_PLAYER;
-      }
-    }
-
-    if (!justToCheck && this.isWinMove(player, column, currentRow)) {
-      this.win(player);
-    }
-
-    return currentRow;
-  }
-
-  private win(player: Player): void {
-    this.winnerSubject.next(player);
-    this.scoreService.addScore(player);
-    // TODO reset game ect. !
-  }
-
-  private isPlayerToken(player: Player, column: number, row: number): boolean {
-    if (column >= 0 && column < this.COLUMNS && row >= 0 && row < this.ROWS) {
-      return this.board[column][row] ===
-        (player === Player.REAL_PLAYER ? CellStateModel.REAL_PLAYER : CellStateModel.AI_PLAYER);
-    }
-    else {
-      return false;
-    }
-  }
-
-  private checkAlignement(player: Player, column: number, row: number, xMove: 0 | 1, yMove: 0 | 1 | -1): boolean {
-    let continueLeft = true;
-    let continueRight = true;
-    let currentToken = 1;
-
-    for (let offset = 1; offset < 4; offset++) {
-      if (continueRight && this.isPlayerToken(player, column + offset * xMove, row + offset * yMove)) {
-        currentToken++;
+    if (row !== -1) {
+      if (this.game.isWinMove(player, column, row)) {
+        this.win(player);
       }
       else {
-        continueRight = false;
-      }
-      if (continueLeft && this.isPlayerToken(player, column - offset * xMove, row - offset * yMove)) {
-        currentToken++;
-      }
-      else {
-        continueLeft = false;
-      }
-      if (!continueLeft && !continueRight) {
-        break;
+        this.currentPlayerTurn.next(this.currentPlayerTurn.getValue() ===
+        Player.REAL_PLAYER ? Player.AI : Player.REAL_PLAYER);
       }
     }
-    return currentToken > 3;
+
+    return row !== -1;
   }
 
-  private isWinMove(player: Player, column: number, row: number): boolean {
-    // horizontal check
-    if (this.checkAlignement(player, column, row, 1, 0)) {
-      return true;
+  highlight(column: number, highlight: boolean): void {
+    if (highlight) {
+      this.highlightedCellRow = this.game.getRowDroppedToken(column);
     }
 
-    // vertical check
-    if (this.checkAlignement(player, column, row, 0, 1)) {
-      return true;
-    }
+    this.game.highlight(column, this.highlightedCellRow, highlight);
+  }
 
-    // diagonal-up right check
-    if (this.checkAlignement(player, column, row, 1, 1)) {
-      return true;
-    }
+  getBoard(): CellStateModel[][] {
+    return this.game.board;
+  }
 
-    // diagonal-down right check
-    return this.checkAlignement(player, column, row, 1, -1);
+  isPlayerTurn(player: Player): boolean {
+    return this.currentPlayerTurn.getValue() === player;
   }
 
   isStarted(): boolean {
     return this.players !== undefined;
   }
 
-  highlight(column: number, row: number, hightlight: boolean): void {
-    if (this.board[column][row] !== CellStateModel.HIGHLIGHTED_CELL &&
-      this.board[column][row] !== CellStateModel.EMPTY) {
-      return;
-    }
+  ngOnDestroy(): void {
+    this.currentPlayerTurnSubscription.unsubscribe();
+  }
 
-    this.board[column][row] =
-      (hightlight ? CellStateModel.HIGHLIGHTED_CELL : CellStateModel.EMPTY);
+  private win(player: Player): void {
+    this.winnerSubject.next(player);
+    this.scoreService.addScore(player);
+    this.reset();
+  }
+
+  private initAi(): void {
+    this.currentPlayerTurnSubscription = this.currentPlayerTurn.subscribe(
+      player => {
+        if (player === Player.AI) {
+          // Ai plays here
+          const column = this.players[player].guessMove(this.game);
+          this.dropToken(player, column);
+        }
+      }
+    );
+  }
+
+  private reset(): void {
+    this.currentPlayerTurnSubscription.unsubscribe();
+    this.currentPlayerTurn.next(GameService.getRandomPlayer());
+
+    this.game.reset();
+    this.initAi();
   }
 }

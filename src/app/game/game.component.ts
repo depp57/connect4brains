@@ -22,9 +22,12 @@ export class GameComponent implements OnDestroy {
   }
 
   private displayWinner(winner: Player): void {
-    this.messageService.add({key: 'bc', severity: 'success',
+    this.messageService.add({
+      key: 'bc',
+      severity: 'success',
       summary: winner === Player.REAL_PLAYER ? 'Well played' : 'The AI won',
-      detail: winner === Player.REAL_PLAYER ? 'You won!' : 'Wanna try again ?'});
+      detail: winner === Player.REAL_PLAYER ? 'You won!' : 'Wanna try again ?',
+      life: 1200});
   }
 
   ngOnDestroy(): void {

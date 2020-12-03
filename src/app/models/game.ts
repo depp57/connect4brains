@@ -5,8 +5,8 @@ export class Game {
 
   board: CellStateModel[][] = [];
 
-  private readonly ROWS = 6;
-  private readonly COLUMNS = 7;
+  readonly ROWS = 6;
+  readonly COLUMNS = 7;
 
   constructor() {
     this.initBoard();
@@ -84,6 +84,7 @@ export class Game {
         this.board[column][row] = CellStateModel.EMPTY;
       }
     }
+    console.log('finished');
   }
 
   private isPlayerToken(player: Player, column: number, row: number): boolean {

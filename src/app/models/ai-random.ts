@@ -9,7 +9,14 @@ export class AiRandom extends PlayerModel implements Ai {
   }
 
   guessMove(game: Game): number {
-    return 0;
+    // tslint:disable-next-line:no-bitwise Bitwise float -> int
+    let randomColumn = (Math.random() * game.COLUMNS) | 0;
+
+    while (!game.isValidMove(randomColumn)) {
+      randomColumn = Math.random() * game.COLUMNS;
+    }
+
+    return randomColumn;
   }
 
 }

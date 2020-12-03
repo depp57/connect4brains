@@ -8,6 +8,7 @@ import {GameRoutingModule} from './game-routing.module';
 import {GameColComponent} from './board/game-col/game-col.component';
 import {GameCellComponent} from './board/game-col/game-cell/game-cell.component';
 import {ToastModule} from 'primeng/toast';
+import {CellStateToCssPipe} from './board/game-col/game-cell/cellstate-to-css.pipe';
 
 
 @NgModule({
@@ -16,7 +17,8 @@ import {ToastModule} from 'primeng/toast';
     ScoreboardComponent,
     GameComponent,
     GameColComponent,
-    GameCellComponent
+    GameCellComponent,
+    CellStateToCssPipe
   ],
   imports: [
     CommonModule,

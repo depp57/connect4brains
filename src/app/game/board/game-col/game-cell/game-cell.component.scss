@@ -1,0 +1,21 @@
+#circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 100%;
+}
+
+.empty {
+  background: #0063B1;
+}
+
+.real-player {
+  background: #ff8c7d;
+}
+
+.ai-player {
+  background: #720026;
+}
+
+.highlighted_cell {
+  background: green;
+}

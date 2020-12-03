@@ -1,0 +1,17 @@
+#game-board {
+  margin: auto;
+}
+
+@media (orientation: landscape) {
+  #game-board {
+    width: 95vh;
+    height: 95vh;
+  }
+}
+
+@media (orientation: portrait) {
+  #game-board {
+    width: 98vw;
+    height: 98vw;
+  }
+}

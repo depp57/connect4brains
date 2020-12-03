@@ -1,0 +1,21 @@
+#container {
+  text-align: center;
+}
+
+#player_name {
+  font-size: 3rem;
+}
+
+#score {
+  font-size: 5rem;
+}
+
+@media (orientation: portrait) {
+  #player_name {
+    font-size: 1rem;
+  }
+
+  #score {
+    font-size: 2rem;
+  }
+}

@@ -1,0 +1,10 @@
+<p-dialog [(visible)]="display" [transitionOptions]="'250ms'">
+  <div id="container">
+    <h1>Hello! What's your name?</h1>
+    <span class="p-float-label">
+      <input id="name-input" type="text" pInputText [(ngModel)]="inputName">
+      <label for="name-input">Username</label>
+    </span>
+    <p-button [disabled]="inputName.length < 3" label="Play" (onClick)="startGame()"></p-button>
+  </div>
+</p-dialog>

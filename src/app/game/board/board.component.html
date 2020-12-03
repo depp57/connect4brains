@@ -1,0 +1,12 @@
+<div id="game-board" class="p-grid p-ai-stretch vertical-container height-100">
+
+  <div class="p-col" *ngFor="let column of board; index as i">
+    <app-game-col
+      [column]="column"
+      (mouseenter)="onMouseEnter(i)"
+      (mouseleave)="onMouseLeave(i)"
+      (click)="onMouseClick(i)"
+    ></app-game-col>
+  </div>
+
+</div>

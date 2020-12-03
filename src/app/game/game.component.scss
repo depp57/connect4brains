@@ -1,0 +1,37 @@
+$horizontal_margin: 1%;
+$vertical_margin: 2%;
+
+#container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  padding: $vertical_margin $horizontal_margin;
+}
+
+app-board {
+  flex-grow: 5;
+}
+
+app-scoreboard {
+  flex-grow: 1;
+}
+
+.vertical-centered {
+  align-self: center;
+}
+
+@media (orientation: portrait) {
+  #container {
+    flex-direction: column;
+  }
+
+  .scoreboard-responsive {
+    height: 10vh;
+    width: 90%;
+  }
+
+  app-board {
+    flex-grow: 1;
+    margin: 33% 0 0 0;
+  }
+}
